@@ -324,4 +324,4 @@ If you have questions or need help using the library, please open an issue or [c
 
 ---
 
-Copyright 2024 Crawlbase
+Copyright 2025 Crawlbase
