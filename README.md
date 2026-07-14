@@ -131,13 +131,27 @@ if ($response->statusCode === 200) {
 
 ## Original status
 
-You can always get the original status and crawlbase status from the response. Read the [Crawlbase documentation](https://crawlbase.com/docs/crawling-api/) to learn more about those status.
+You can always get the original status and Crawlbase status from the response. Read the [Crawlbase documentation](https://crawlbase.com/docs/crawling-api/) to learn more about those status.
+
+Prefer `cb_status` for the Crawlbase status. `pc_status` is deprecated but still supported temporarily as an alias of the same resolved value. When both headers are present, `cb_status` takes priority.
 
 ```php
 $response = $api->get('https://craiglist.com');
 echo $response->headers->original_status . PHP_EOL;
-echo $response->headers->pc_status . PHP_EOL;
+echo $response->headers->cb_status . PHP_EOL;
 ```
+
+### Migrating from `pc_status` to `cb_status`
+
+```php
+// Before (deprecated)
+echo $response->headers->pc_status;
+
+// After (preferred)
+echo $response->headers->cb_status;
+```
+
+During the deprecation period, both properties remain available and are kept in sync by the library.
 
 ## Scraper API
 
@@ -238,7 +252,7 @@ echo 'status code: ' . $response->statusCode . PHP_EOL;
 if ($response->statusCode === 200) {
   echo 'body: ' . $response->body . PHP_EOL;
   echo 'original status: ' . $response->headers->original_status . PHP_EOL;
-  echo 'crawlbase status: ' . $response->headers->pc_status . PHP_EOL;
+  echo 'crawlbase status: ' . $response->headers->cb_status . PHP_EOL;
   echo 'rid: ' . $response->headers->rid . PHP_EOL;
   echo 'url: ' . $response->headers->url . PHP_EOL;
   echo 'stored date: ' . $response->headers->stored_at . PHP_EOL;
@@ -254,7 +268,7 @@ echo 'status code: ' . $response->statusCode . PHP_EOL;
 if ($response->statusCode === 200) {
   echo 'body: ' . $response->body . PHP_EOL;
   echo 'original status: ' . $response->headers->original_status . PHP_EOL;
-  echo 'crawlbase status: ' . $response->headers->pc_status . PHP_EOL;
+  echo 'crawlbase status: ' . $response->headers->cb_status . PHP_EOL;
   echo 'rid: ' . $response->headers->rid . PHP_EOL;
   echo 'url: ' . $response->headers->url . PHP_EOL;
   echo 'stored date: ' . $response->headers->stored_at . PHP_EOL;
@@ -287,7 +301,7 @@ foreach ($items as $item) {
   echo 'body: ' . $item->body . PHP_EOL;
   echo 'stored at: ' . $item->stored_at . PHP_EOL;
   echo 'original status: ' . $item->original_status . PHP_EOL;
-  echo 'crawlbase status: ' . $item->pc_status . PHP_EOL;
+  echo 'crawlbase status: ' . $item->cb_status . PHP_EOL;
   echo 'rid: ' . $item->rid . PHP_EOL;
   echo 'url: ' . $item->url . PHP_EOL;
   echo PHP_EOL;

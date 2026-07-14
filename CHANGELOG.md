@@ -2,6 +2,11 @@
 
 Only major versions or things to communicate are written here. Minor changes or bug fixes might not appear in the changelog.
 
+## 3.1.0
+
+Introduces `cb_status` as the preferred Crawlbase status field on response headers (and Storage bulk items).  
+`pc_status` is deprecated but still supported as a temporary alias of the resolved status value. When both `cb_status` and `pc_status` are present, `cb_status` takes priority. See the README migration note for upgrading from `pc_status` to `cb_status`.
+
 ## 3.0.0
 
 Adds Screenshots API and Storage API.  

@@ -51,6 +51,17 @@ class StorageAPI extends BaseAPI {
 
     $this->setEndpoint('storage/bulk');
     $this->request($options, $data);
+
+    $json = $this->response->json;
+    if (is_array($json)) {
+      foreach ($json as $index => $item) {
+        $json[$index] = $this->normalizeCrawlbaseStatusObject($item);
+      }
+      $this->response->json = $json;
+    } else if (is_object($json)) {
+      $this->response->json = $this->normalizeCrawlbaseStatusObject($json);
+    }
+
     return $this->response->json;
   }
 

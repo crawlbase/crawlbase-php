@@ -103,6 +103,8 @@ class BaseAPI {
         $this->parseJsonResponse();
       }
 
+      $this->normalizeCrawlbaseStatusHeaders();
+
       if ($this->debug || $this->advDebug) {
         $info = curl_getinfo($curl);
         echo '<pre>';
@@ -161,9 +163,19 @@ class BaseAPI {
     $json = json_decode($this->response['body']);
     if (!empty($json->original_status)) {
       $this->response['headers']['original_status'] = $json->original_status;
-      $this->response['headers']['pc_status'] = $json->pc_status;
       $this->response['headers']['url'] = $json->url;
     }
+
+    $status = $this->resolveCrawlbaseStatus(
+      isset($json->cb_status) ? $json->cb_status : null,
+      isset($json->pc_status) ? $json->pc_status : null
+    );
+    if ($status !== null) {
+      $this->response['headers']['cb_status'] = $status;
+      // pc_status is deprecated; kept as an alias of cb_status for backward compatibility.
+      $this->response['headers']['pc_status'] = $status;
+    }
+
     if (!empty($json->remaining_requests)) {
       $this->response['headers']['remaining_requests'] = $json->remaining_requests;
     }
@@ -172,6 +184,104 @@ class BaseAPI {
     } else {
       $this->response['json'] = $json;
     }
+  }
+
+  /**
+   * Prefer cb_status; fall back to deprecated pc_status. Mirror the resolved value onto both.
+   * pc_status will be removed in a future major release.
+   */
+  protected function normalizeCrawlbaseStatusHeaders() {
+    if (!isset($this->response['headers']) || !is_array($this->response['headers'])) {
+      return;
+    }
+
+    $headers = &$this->response['headers'];
+    $status = $this->resolveCrawlbaseStatus(
+      isset($headers['cb_status']) ? $headers['cb_status'] : null,
+      isset($headers['pc_status']) ? $headers['pc_status'] : null
+    );
+
+    if ($status === null) {
+      return;
+    }
+
+    $headers['cb_status'] = $status;
+    // pc_status is deprecated; kept as an alias of cb_status for backward compatibility.
+    $headers['pc_status'] = $status;
+  }
+
+  /**
+   * Prefer cb_status; fall back to deprecated pc_status. Mirror the resolved value onto both
+   * properties when either is present. Used for Storage bulk JSON items.
+   * pc_status will be removed in a future major release.
+   *
+   * @param object|array $object
+   * @return object|array
+   */
+  protected function normalizeCrawlbaseStatusObject($object) {
+    if (is_object($object)) {
+      $status = $this->resolveCrawlbaseStatus(
+        isset($object->cb_status) ? $object->cb_status : null,
+        isset($object->pc_status) ? $object->pc_status : null
+      );
+      if ($status !== null) {
+        $object->cb_status = $status;
+        // pc_status is deprecated; kept as an alias of cb_status for backward compatibility.
+        $object->pc_status = $status;
+      }
+      return $object;
+    }
+
+    if (is_array($object)) {
+      $status = $this->resolveCrawlbaseStatus(
+        isset($object['cb_status']) ? $object['cb_status'] : null,
+        isset($object['pc_status']) ? $object['pc_status'] : null
+      );
+      if ($status !== null) {
+        $object['cb_status'] = $status;
+        // pc_status is deprecated; kept as an alias of cb_status for backward compatibility.
+        $object['pc_status'] = $status;
+      }
+      return $object;
+    }
+
+    return $object;
+  }
+
+  /**
+   * @param mixed $cbStatus Preferred status (cb_status)
+   * @param mixed $pcStatus Deprecated status (pc_status)
+   * @return mixed|null Resolved status, or null when neither is present
+   */
+  protected function resolveCrawlbaseStatus($cbStatus, $pcStatus) {
+    if ($this->isCrawlbaseStatusPresent($cbStatus)) {
+      return $this->castCrawlbaseStatusValue($cbStatus);
+    }
+    if ($this->isCrawlbaseStatusPresent($pcStatus)) {
+      return $this->castCrawlbaseStatusValue($pcStatus);
+    }
+
+    return null;
+  }
+
+  /**
+   * @param mixed $value
+   * @return bool
+   */
+  protected function isCrawlbaseStatusPresent($value) {
+    return $value !== null && $value !== '';
+  }
+
+  /**
+   * @param mixed $value
+   * @return mixed
+   */
+  protected function castCrawlbaseStatusValue($value) {
+    if (is_numeric($value)) {
+      return (int) $value;
+    }
+
+    return $value;
   }
 
 }
