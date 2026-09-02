@@ -155,6 +155,8 @@ During the deprecation period, both properties remain available and are kept in 
 
 ## Scraper API
 
+> ⚠️ **Deprecated.** The standalone Scraper API has been closed to new sign-ups since October 1, 2024. Existing integrations continue to work and no shutdown is scheduled, but new code should use the Crawling API with the `scraper` parameter instead (same scrapers, simpler endpoint, more parameters). The class below stays available for backward compatibility. See the [scrapers documentation](https://crawlbase.com/docs/scrapers).
+
 First initialize the ScraperAPI class. You can [get your free token here](https://crawlbase.com/signup?signup=github). Please note that only some websites are supported, check the [API documentation](https://crawlbase.com/docs/scraper-api/) for more information.
 
 ```php
@@ -174,6 +176,8 @@ if ($response->statusCode === 200) {
 ```
 
 ## Leads API
+
+> ⚠️ **Deprecated.** The Leads API has been closed to new sign-ups since October 1, 2024. Existing integrations continue to work and no shutdown is scheduled. There is no direct replacement; for similar workflows use the Crawling API with the [`email-extractor`](https://crawlbase.com/docs/scrapers/email-extractor) scraper (any URL → emails) or the [`google-serp`](https://crawlbase.com/docs/scrapers/google-serp) scraper for domain-scoped contact discovery. The class below stays available for backward compatibility.
 
 First initialize the LeadsAPI class. You can [get your free token here](https://crawlbase.com/signup?signup=github).
 
@@ -195,6 +199,8 @@ if ($response->statusCode === 200) {
 ```
 
 ## Screenshots API usage
+
+> ⚠️ **Deprecated.** The standalone Screenshots API has been closed to new sign-ups since November 1, 2024. Existing integrations continue to work and no shutdown is scheduled, but new code should use the Crawling API with the `screenshot=true` parameter — same JS-rendering pipeline, screenshot parameters on the standard endpoint. The class below stays available for backward compatibility. See the [Crawling API screenshots section](https://crawlbase.com/docs/crawling-api#screenshots).
 
 Initialize with your Screenshots API token and call the `get` method.
 
@@ -234,6 +240,21 @@ echo 'remaining requests: ' . $response->headers->remaining_requests . PHP_EOL;
 ```
 
 Note that `$api.get(url, options)` method accepts an [options](https://crawlbase.com/docs/screenshots-api/parameters)
+
+## Smart AI Proxy usage
+
+The [Smart AI Proxy](https://crawlbase.com/docs/smart-proxy) is a standard rotating HTTP(S) proxy endpoint, so it needs no SDK: point any HTTP client at `smartproxy.crawlbase.com:8012` (HTTP) or `smartproxy.crawlbase.com:8013` (HTTPS) with your token as the proxy username and an empty password. Crawlbase handles proxy rotation, retries and anti-bot bypass on its side.
+
+```php
+$ch = curl_init('https://httpbin.org/ip');
+curl_setopt($ch, CURLOPT_PROXY, 'https://smartproxy.crawlbase.com:8013');
+curl_setopt($ch, CURLOPT_PROXYUSERPWD, 'YOUR_TOKEN:');
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+echo curl_exec($ch);
+```
+
+Note: the proxy re-signs HTTPS traffic, so certificate verification must be disabled on the client (as in the example). See the [Smart AI Proxy documentation](https://crawlbase.com/docs/smart-proxy) for all options.
 
 ## Storage API usage
 
